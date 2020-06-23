@@ -1,4 +1,4 @@
-﻿# This is  a homework project
+# This is  a homework project
 
 It works
 
