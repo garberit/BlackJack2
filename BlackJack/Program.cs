@@ -72,18 +72,7 @@ namespace BlackJack
 							//if someone has blackjack game is over
 							if (game.Players.Any(player => player.HasBlackJack()))
 							{
-								foreach (Player player in game.Players)
-								{
-									if (player.HasBlackJack())
-									{
-										Console.WriteLine($"{player.Name} has blackjack.");
-										playerWon(player);
-									}
-									else
-									{
-										playerLost(player);
-									}
-								}
+								DeclareWinners(game);
 								break;
 							}
 							//everyone gets a turn now
@@ -101,9 +90,9 @@ namespace BlackJack
 								Console.WriteLine($"Dealer's first card: {game.Dealer.Hand.ElementAt(0).Face}, {game.Dealer.Hand.ElementAt(0).Value}\r\n");
 
 								//time to hit or stay								
-								
+
 								var answ = new ConsoleKeyInfo();
-								
+
 								while (answ.KeyChar != 's' && answ.Key != ConsoleKey.Escape && !p.IsBusted())
 								{
 									Console.Write($"\r\n{p.Name}, Hit or stay? h/s: ");
@@ -137,7 +126,7 @@ namespace BlackJack
 
 										Console.WriteLine(e.Message);
 									}
-									
+
 								}
 
 							}
@@ -163,38 +152,11 @@ namespace BlackJack
 							//uf no one busted or had blackjack, winner is the player with the 
 							//highest score
 
-							//create a list of unbusted players
-							List<Player> notBusted = new List<Player>();
-							foreach (Player player1 in game.Players)
-							{
-								if (!player1.IsBusted())
-								{
-									notBusted.Add(player1);
-								}
-							}
-
-							//gets the highest sum of cards and adds the players with that sum to the winners list
-							int highestSum = notBusted.Max(pl => pl.GetSumOfAllCards());
-							List<Player> winners = notBusted.FindAll(pl => pl.GetSumOfAllCards() == highestSum);
-							//every winner gets a point
-							foreach (Player winner in winners)
-							{
-								playerWon(winner);
-								winner.Score++;
-							}
-							//list for everyone else, losers
-							List<Player> losers = game.Players.FindAll(pl => pl.GetSumOfAllCards() != highestSum);
-							foreach (Player loser in losers)
-							{
-								playerLost(loser);
-								loser.Score--;
-							}
-
-							Console.WriteLine($"\r\nGAME OVER!");
+							DeclareWinners(game);
 							//All done. Time to show cards and sum all up game scores.
 							foreach (Player player in game.Players)
 							{
-								Console.WriteLine($"{player.Name}: Hand: {player.Hand.ToString()}. Sum: {player.GetSumOfAllCards()}. Score: {player.Score}");
+								Console.WriteLine($"{player.Name}: Sum: {player.GetSumOfAllCards()}. Score: {player.Score}");
 							}
 
 
@@ -213,15 +175,51 @@ namespace BlackJack
 			}
 		}
 
+		private static void DeclareWinners(Game game)
+		{
+			//create a list of unbusted players
+			List<Player> notBusted = new List<Player>();
+			foreach (Player player1 in game.Players)
+			{
+				if (!player1.IsBusted())
+				{
+					notBusted.Add(player1);
+				}
+			}
+
+			//gets the highest sum of cards and adds the players with that sum to the winners list
+			int highestSum = notBusted.Max(pl => pl.GetSumOfAllCards());
+			List<Player> winners = notBusted.FindAll(pl => pl.GetSumOfAllCards() == highestSum);
+			//every winner gets a point
+			foreach (Player winner in winners)
+			{
+				if (winner.HasBlackJack())
+				{
+					Console.WriteLine($"{winner.Name} has blackjack!");
+				}
+				playerWon(winner);
+				winner.Score++;
+			}
+			//list for everyone else, losers
+			List<Player> losers = game.Players.FindAll(pl => pl.GetSumOfAllCards() != highestSum);
+			foreach (Player loser in losers)
+			{
+				playerLost(loser);
+				loser.Score--;
+			}
+
+			Console.WriteLine($"\r\nGAME OVER!");
+		}
+
 		private static void playerLost(Player player)
 		{
-			Console.WriteLine($"{player.Name} lost. 1 point deducted from score");
+			Console.WriteLine($"{player.Name} lost. Hand: {player.Hand.ToString()}. 1 point deducted from score");
 			player.PlayerStands = true;
 			
 		}
 		private static void playerWon(Player player)
 		{
-			Console.WriteLine($"{player.Name} won. 1 point added to score");
+			Console.WriteLine($"{player.Name} won. Hand: {player.Hand.ToString()}. 1 point added to score");
 			player.PlayerStands = true;
 
 		}
